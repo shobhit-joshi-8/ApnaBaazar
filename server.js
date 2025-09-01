@@ -4,6 +4,9 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoute')
+const categoryRoutes = require('./routes/categoryRoutes');
+const productRoutes = require('./routes/productRoute');
+
 const cors = require('cors');
 
 //CONFIG DOTENV
@@ -22,6 +25,9 @@ app.use(morgan('dev'));
 
 //ROUTES
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/category', categoryRoutes);
+app.use('/api/v1/product', productRoutes);
+
 
 // REST API
 app.get('/', (req, res) => {
