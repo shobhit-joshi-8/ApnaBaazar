@@ -8,7 +8,7 @@ const createCategoryController = async (req, res) => {
 
         // VALIDATION
         if (!name) {
-            return res.status(400).send({
+            return res.status(200).send({
                 success: false,
                 message: "Name is required",
             })
@@ -109,7 +109,7 @@ const deleteCategoryController = async (req, res) => {
         await categoryModel.findByIdAndDelete(id);
 
         return res.status(200).send({
-            success: false,
+            success: true,
             message: "Category deleted successfully",
         })
     } catch (error) {

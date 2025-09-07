@@ -2,9 +2,12 @@ import React from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/auth'
 import toast from 'react-hot-toast';
+import SearchInput from '../form/SearchInput';
+import useCategory from '../../hooks/useCategory';
 
 const Header = () => {
     const [auth, setAuth] = useAuth();
+    const categories = useCategory();
 
     const handleLogout = () => {
         setAuth({
@@ -41,10 +44,20 @@ const Header = () => {
                                     Home
                                 </NavLink>
                             </li>
-                            <li className="nav-item">
-                                <NavLink to='/category' className="nav-link " aria-current="page" >
-                                    Category
-                                </NavLink>
+                            <li className="nav-item dropdown">
+                                <Link className="nav-link dropdown-toggle" to={"/categories"} data-bs-toggle="dropdown">
+                                    Categories
+                                </Link>
+                                <ul className="dropdown-menu">
+                                    <li>
+                                            <Link to={"/categories"} className="dropdown-item">ALL CATEGORIES</Link>
+                                        </li>
+                                    {categories?.map((item) => (
+                                        <li key={item._id}>
+                                            <Link to={`/category/${item?.slug}`} className="dropdown-item">{item?.name}</Link>
+                                        </li>
+                                    ))}
+                                </ul>
                             </li>
                             {!auth.user ? (<>
                                 <li className="nav-item">
@@ -92,7 +105,7 @@ const Header = () => {
                                 </NavLink>
                             </li>
                         </ul>
-                        <form className="d-flex" role="search">
+                        {/* <form className="d-flex" role="search">
                             <input
                                 className="form-control me-2"
                                 type="search"
@@ -102,7 +115,9 @@ const Header = () => {
                             <button className="btn btn-outline-success" type="submit">
                                 Search
                             </button>
-                        </form>
+                        </form> */}
+
+                        <SearchInput />
                     </div>
                 </div>
             </nav>

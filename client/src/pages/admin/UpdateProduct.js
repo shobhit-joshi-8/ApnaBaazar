@@ -6,9 +6,9 @@ import toast from 'react-hot-toast';
 import { Select } from 'antd';
 import { Option } from 'antd/es/mentions';
 import { useAuth } from '../../context/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const CreateProduct = () => {
+const UpdateProduct = () => {
     const [categories, setCategories] = useState([]);
     const [category, setCategory] = useState("");
     const [name, setName] = useState("");
@@ -17,8 +17,27 @@ const CreateProduct = () => {
     const [quantity, setQuantity] = useState("");
     const [photo, setPhoto] = useState("");
     const [shipping, setShipping] = useState("");
+    const [id, setId] = useState("");
     const [auth] = useAuth();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const params = useParams();
+
+    //GET SINGLE PRODUCT
+    const getSingleProduct = async () => {
+        try {
+            const res = await axios.get(`${process.env.REACT_APP_API}/api/v1/product/get-product/${params.slug}`);
+            setName(res?.data?.product?.name);
+            setDescription(res?.data?.product?.description);
+            setPrice(res?.data?.product?.price);
+            setQuantity(res?.data?.product?.quantity);
+            setShipping(res?.data?.product?.shipping);
+            setCategory(res?.data?.product?.category?._id);
+            setId(res?.data?.product?._id);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     //GET ALL CATEGORIES
     const getAllCategory = async () => {
@@ -34,7 +53,7 @@ const CreateProduct = () => {
     };
 
     //CREATE PRODUCT FUNCTION
-    const handleCreateProduct = async (e) => {
+    const handleUpdateProduct = async (e) => {
         try {
             e.preventDefault();
             const productData = new FormData()
@@ -42,21 +61,22 @@ const CreateProduct = () => {
             productData.append("description", description);
             productData.append("price", price);
             productData.append("quantity", quantity);
-            productData.append("photo", photo);
+            photo && productData.append("photo", photo);
             productData.append("shipping", shipping);
             productData.append("category", category);
 
 
-            // console.log(FormData, "formdata")
-            const res = await axios.post(`${process.env.REACT_APP_API}/api/v1/product/create-product`, productData, {
+            // console.log(productData, "formdata")
+            const res = await axios.put(`${process.env.REACT_APP_API}/api/v1/product/update-product/${id}`, productData, {
                 headers: {
                     "Authorization": auth?.token
                 }
             });
 
             if (res?.data?.success) {
-                toast.success("Product created successfuly");
+                toast.success("Product Updated successfuly");
                 navigate("/dashboard/admin/products");
+
             }
             else {
                 toast.error(res?.data?.message);
@@ -67,11 +87,39 @@ const CreateProduct = () => {
         }
     }
 
+    //DELETE PRODUCT
+    const handleDeleteProduct = async () => {
+        try {
+            let answer = window.prompt("Are you sure want to delete this product");
+            if(!answer) {
+                return;
+            }
+            const res = await axios.delete(`${process.env.REACT_APP_API}/api/v1/product/delete-product/${id}`, {
+                headers: {
+                    "Authorization": auth?.token,
+                }
+            });
+
+            if(res?.data?.success){
+                toast.success("Product Deleted successfully");
+                navigate("/dashboard/admin/products");
+            }
+            else{
+                toast.error("Error while deliting product");
+            }
+        } catch (error) {
+            console.log(error);
+            toast.error("Something Went Wrong")
+        }
+    }
+
     useEffect(() => {
         getAllCategory();
-    }, [])
+    }, []);
 
-
+    useEffect(() => {
+        getSingleProduct();
+    }, []);
     return (
         <>
             <Layout>
@@ -79,10 +127,11 @@ const CreateProduct = () => {
                     <div className="row">
                         <div className="col-md-3"><AdminMenu /></div>
                         <div className="col-md-9">
-                            <h1>Create Product</h1>
+                            <h1>Update Product</h1>
                             <div className="m-1 w-75">
                                 <Select variant="outlined" placeholder="Select Category" size="large" showSearch
                                     // className="form-select mb-3"
+                                    value={category}
                                     className="mb-3"
                                     style={{ width: "100%" }}
                                     onChange={(value) => { setCategory(value) }}>
@@ -99,11 +148,13 @@ const CreateProduct = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    {photo && (
+                                    {photo ? (
                                         <div className="text-center">
                                             <img src={URL.createObjectURL(photo)} alt="product_photo" height={"200px"} className="img img-responsive" />
                                         </div>
-                                    )}
+                                    ) : <div className="text-center">
+                                        <img src={`${process.env.REACT_APP_API}/api/v1/product/get-product-photo/${id}`} alt="product_photo" height={"200px"} className="img img-responsive" />
+                                    </div>}
                                 </div>
 
                                 <div className="mb-3">
@@ -122,6 +173,7 @@ const CreateProduct = () => {
                                 <div className="mb-3">
                                     <Select variant="outlined" placeholder="Select Shipping" size="large"
                                         // className="form-select mb-3"
+                                        value={shipping ? "Yes" : "No"}
                                         style={{ width: "100%" }}
                                         onChange={(value) => { setShipping(value) }}>
                                         <Option value="0">No</Option>
@@ -130,7 +182,11 @@ const CreateProduct = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <div className="btn btn-primary" onClick={handleCreateProduct}>Create Product</div>
+                                    <div className="btn btn-primary" onClick={handleUpdateProduct}>Update Product</div>
+                                </div>
+
+                                <div className="mb-3">
+                                    <div className="btn btn-danger" onClick={handleDeleteProduct}>Delete Product</div>
                                 </div>
                             </div>
                         </div>
@@ -141,4 +197,4 @@ const CreateProduct = () => {
     )
 }
 
-export default CreateProduct
+export default UpdateProduct
