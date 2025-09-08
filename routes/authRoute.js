@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerController, loginController, testController, forgotPasswordController } = require('../controllers/authController');
+const { registerController, loginController, testController, forgotPasswordController, updateProfileController } = require('../controllers/authController');
 const { requireSignIn, isAdmin, isUser } = require('../middlewares/authMiddleware');
 
 //ROUTER OBJECT
@@ -25,6 +25,9 @@ router.get('/user-auth', requireSignIn, isUser ,(req, res) => {
 
 router.get('/admin-auth', requireSignIn, isAdmin, (req, res) => {
     res.status(200).send({ ok: true });
-})
+});
+
+//UPDATE PROFILE 
+router.put('/profile', requireSignIn, updateProfileController)
 
 module.exports = router;

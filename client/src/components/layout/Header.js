@@ -4,10 +4,13 @@ import { useAuth } from '../../context/auth'
 import toast from 'react-hot-toast';
 import SearchInput from '../form/SearchInput';
 import useCategory from '../../hooks/useCategory';
+import { useCart } from '../../context/context';
+import { Badge } from 'antd';
 
 const Header = () => {
     const [auth, setAuth] = useAuth();
     const categories = useCategory();
+    const [cart] = useCart();
 
     const handleLogout = () => {
         setAuth({
@@ -50,8 +53,8 @@ const Header = () => {
                                 </Link>
                                 <ul className="dropdown-menu">
                                     <li>
-                                            <Link to={"/categories"} className="dropdown-item">ALL CATEGORIES</Link>
-                                        </li>
+                                        <Link to={"/categories"} className="dropdown-item">ALL CATEGORIES</Link>
+                                    </li>
                                     {categories?.map((item) => (
                                         <li key={item._id}>
                                             <Link to={`/category/${item?.slug}`} className="dropdown-item">{item?.name}</Link>
@@ -100,9 +103,15 @@ const Header = () => {
 
                             </>)}
                             <li className="nav-item">
-                                <NavLink to='/cart' className="nav-link" >
-                                    Cart (0)
-                                </NavLink>
+
+                            </li>
+
+                            <li>
+                                <Badge count={cart?.length} showZero>
+                                    <NavLink to='/cart' className="nav-link" >
+                                        Cart 
+                                    </NavLink>
+                                </Badge>
                             </li>
                         </ul>
                         {/* <form className="d-flex" role="search">
