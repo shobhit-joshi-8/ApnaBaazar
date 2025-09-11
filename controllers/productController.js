@@ -421,7 +421,7 @@ const braintreePaymentController = async (req, res) => {
 
             function (error, result) {
                 if (result) {
-                    const order =  new orderModel({
+                    const order = new orderModel({
                         products: cart,
                         payment: result,
                         buyer: req?.user?._id,
@@ -449,4 +449,80 @@ const braintreePaymentController = async (req, res) => {
     }
 }
 
-module.exports = { createProductController, getAllProductController, getProductController, getProductPhotoController, deleteProductController, updateProductController, filterProductController, productCountController, productListController, searchProductController, similarProductController, getProductsByCategoryController, braintreeTokenController, braintreePaymentController };
+//ORDERS
+const getMyOrdersController = async (req, res) => {
+    try {
+        const orders = await orderModel.find({ buyer: req?.user?._id }).populate("products", "-photo").populate("buyer").sort({ createdAt: -1 });
+        return res.status(200).send({
+            success: true,
+            message: "Fetch my orders",
+            orders
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            success: false,
+            message: "Error in Orders API",
+        })
+    }
+}
+
+const getAllOrdersController = async (req, res) => {
+    try {
+        const orders = await orderModel.find({}).populate("products", "-photo").populate("buyer").sort({ createdAt: -1 });
+
+        return res.status(200).send({
+            success: true,
+            totalOrders: orders?.length,
+            message: "Get all orders",
+            orders
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            success: false,
+            message: "Error in Get all orders API",
+        })
+    }
+}
+
+const updateOrderStatusController = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { status } = req.body;
+
+        const order = await orderModel.findByIdAndUpdate(orderId, { status }, { new: true });
+
+        return res.status(200).send({
+            success: true,
+            message: "Order status updated",
+            order
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            success: false,
+            message: "Error in update order status API",
+        })
+    }
+}
+
+module.exports = {
+    createProductController,
+    getAllProductController,
+    getProductController,
+    getProductPhotoController,
+    deleteProductController,
+    updateProductController,
+    filterProductController,
+    productCountController,
+    productListController,
+    searchProductController,
+    similarProductController,
+    getProductsByCategoryController,
+    braintreeTokenController,
+    braintreePaymentController,
+    getMyOrdersController,
+    getAllOrdersController,
+    updateOrderStatusController
+};

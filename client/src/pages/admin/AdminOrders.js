@@ -1,27 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import Layout from '../../components/layout/Layout'
-import UserMenu from '../../components/layout/UserMenu'
-import axios from 'axios';
-import { useAuth } from '../../context/auth';
-const Orders = () => {
+import AdminMenu from '../../components/layout/AdminMenu'
+import axios from 'axios'
+import toast from 'react-hot-toast'
+import { useAuth } from '../../context/auth'
+import { Select } from 'antd'
+import { Option } from 'antd/es/mentions'
+
+const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
+    const [status, setStatus] = useState(["Not Process", "Processing", "Shipped", "delivered", "canceled"]);
+    const [changedStatus, setChangedStatus] = useState("");
     const [auth] = useAuth();
-
-    const getMyOrders = async () => {
-        try {
-            const res = await axios.get(`${process.env.REACT_APP_API}/api/v1/product/orders`, {
-                headers: {
-                    "Authorization": auth?.token,
-                }
-            });
-
-            if (res?.data?.success) {
-                setOrders(res?.data?.orders);
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    }
 
     const formatOrderDateTime = (createdAt) => {
         try {
@@ -44,22 +34,57 @@ const Orders = () => {
         }
     }
 
+    const getAllOrders = async () => {
+        try {
+            const res = await axios.get(`${process.env.REACT_APP_API}/api/v1/product/all-orders`, {
+                headers: {
+                    "Authorization": auth?.token,
+                }
+            })
+
+            if (res?.data?.success) {
+                setOrders(res?.data?.orders);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     useEffect(() => {
         if (auth?.token) {
-            getMyOrders();
+            getAllOrders();
         }
-    }, [])
+    }, []);
+
+    const handleChange = async (orderId, value) => {
+        try {
+            const res = await axios.put(`${process.env.REACT_APP_API}/api/v1/product/order-status/${orderId}`, { status: value }, {
+                headers: {
+                    "Authorization": auth?.token,
+                }
+            })
+
+            if (res?.data?.success) {
+                    getAllOrders();
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
     return (
         <>
             <Layout>
                 <div className="container-fluid m-3 p-3">
                     <div className="row">
-                        <div className="col-md-3"><UserMenu /></div>
+                        <div className="col-md-3">
+                            <AdminMenu />
+                        </div>
                         <div className="col-md-9">
-                            <h4 className="text-center">My Orders</h4>
+                            <h4>All Ordersss</h4>
+
                             {orders?.map((item, index) => {
                                 return (
-                                    <div className="border shadow" key={item?._id}>
+                                    <div className="border shadow" key={item._id}>
                                         <table className="table table-hover table-stripped">
                                             <thead>
                                                 <tr>
@@ -73,8 +98,17 @@ const Orders = () => {
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>{index + 1}</td > 
-                                                    <td>{item?.status}</td>
+                                                    <td>{index + 1}</td >
+                                                    <td>
+                                                        <Select onChange={(value, orderId) => handleChange(item?._id, value)} defaultValue={item?.status}>
+                                                            {
+                                                                status?.map((orderStatusItem, index) => (
+                                                                    <Option key={index} value={orderStatusItem}>{orderStatusItem}</Option>
+                                                                ))
+                                                            }
+                                                        </Select>
+                                                    </td>
+
                                                     <td>{item?.buyer?.name}</td>
                                                     <td>{formatOrderDateTime(item?.createdAt)}</td>
                                                     <td>{item?.payment?.success ? "Success" : "Failed"}</td>
@@ -110,12 +144,12 @@ const Orders = () => {
                                 )
                             })}
                         </div>
-
                     </div>
                 </div>
+
             </Layout>
         </>
     )
 }
 
-export default Orders
+export default AdminOrders

@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireSignIn, isAdmin } = require('../middlewares/authMiddleware');
-const { createProductController, getAllProductController, getProductController, getProductPhotoController, deleteProductController, updateProductController, filterProductController, productCountController, productListController, searchProductController, similarProductController, getProductsByCategoryController, braintreeTokenController, braintreePaymentController } = require('../controllers/productController');
+const { createProductController, getAllProductController, getProductController, getProductPhotoController, deleteProductController, updateProductController, filterProductController, productCountController, productListController, searchProductController, similarProductController, getProductsByCategoryController, braintreeTokenController, braintreePaymentController, getMyOrdersController, getAllOrdersController, updateOrderStatusController } = require('../controllers/productController');
 const formidable = require('express-formidable');
 
 const router = express.Router();
@@ -48,5 +48,14 @@ router.get('/braintree/token', braintreeTokenController);
 
 //PAYMENTS
 router.post('/braintree/payment', requireSignIn, braintreePaymentController)
+
+//ORDERS
+router.get('/orders', requireSignIn, getMyOrdersController);
+
+//ALL ORDERS
+router.get('/all-orders', requireSignIn, isAdmin, getAllOrdersController);
+
+//ORDER STATUS UPDATE
+router.put('/order-status/:orderId', requireSignIn, isAdmin, updateOrderStatusController );
 
 module.exports = router;
